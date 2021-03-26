@@ -1,12 +1,42 @@
+#directory settings (change as necessary)
+TRACKS = 0 #number of tracks
+GENRE = ""
+
+#this program will find:
+
+import pandas as pd
+df = pd.DataFrame(columns = ["average spec.flux", "greatest spec.flux", "smallest spec.flux", "stdev", "N"])
+row={}
+
+#based on the following settings of:
+
+#segment settings:
+DURATION = 20 #in seconds
+
+#frame settings:
+FRAMESIZE = 2**10 #~20ms per frame
+OVERLAP = 0.5
+
+
+############# START OF CODES #############
+
+#include #define
+
 from scipy.io import wavfile
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fft as FF
 
 SAMPLERATE = 48000
 
+#misc functions (like file i/o)
 
-#FUNCTION DEFINITIONS
+def filenameTrackNo(num, dp, TYPE, aob, tags):
+    numS = str(num)
+    while (len(numS)<dp):
+        numS = "0" + numS
+    return aob + numS + tags + TYPE
+
+#function defs for frame making (short-term features)
 
 def frame(segment, startpt, FRAMESIZE):
     return segment[startpt:startpt+FRAMESIZE]*np.hanning(FRAMESIZE)
@@ -25,6 +55,7 @@ def segment(track, DURATION, SAMPLERATE): #take segment from middle of song.
     seg = track[start:2**n+start]
     return seg
 
+#spectral flux function defs:
 
 def spectralFlux(segment, start, FRAMESIZE):
     frame1 = frame(segment, start, FRAMESIZE)
@@ -47,12 +78,7 @@ def segment_spectralFlux(segment, FRAMESIZE, overlap):
     return arr #arr storing all the flux values
 
 
-def filenameTrackNo(num, dp, TYPE, aob, tags):
-    numS = str(num)
-    while (len(numS)<dp):
-        numS = "0" + numS
-    return aob + numS + tags + TYPE
-
+############ feature extractor ############
 
 def extracting(num, DURATION, SAMPLERATE, FRAMESIZE, OVERLAP): #input track number (int)
     #import file
@@ -63,32 +89,19 @@ def extracting(num, DURATION, SAMPLERATE, FRAMESIZE, OVERLAP): #input track numb
     qty = segment_spectralFlux(seg, FRAMESIZE, OVERLAP) #change the RHS as required
     
     #note info, then export qty to .txt (change as necessary)
-    aob = "[specFlux-""fr"+str(FRAMESIZE)+" NORM] track"
+    aob = "[specFlux-" + "fr" + str(FRAMESIZE) +"] track"
     np.savetxt(filenameTrackNo(num, 2, ".txt", aob, ""), qty)
     return qty
 
 
+############## END OF DEFINITIONS ##############
 
 
-##### RUNNING THE CODE #####
 
-#segment settings/parameters. change as necessary. 
-DURATION = 20 #in seconds
-FRAMESIZE = 2**10 #~20ms per frame
-OVERLAP = 0.5
-
-#directory settings
-TRACKS = 2
-GENRE = "trial run WITH normalization"
-
-
-import pandas as pd
-df = pd.DataFrame(columns = ["average spec.flux", "greatest spec.flux", "smallest spec.flux", "stdev", "N"])
-row={}
-
+############ EXCECUTION OF CODE ############
 
 for NUM in range(1, TRACKS+1):
-    specFluxes = []
+    specFluxes = [] #reset fluxes before loop
     specFluxes = extracting(NUM, DURATION, SAMPLERATE, FRAMESIZE, OVERLAP) #extracting will save qty as .txt in directory.
     #exporting to dataframe
     ave = np.mean(specFluxes)
@@ -101,10 +114,10 @@ for NUM in range(1, TRACKS+1):
     row["N"] = len(specFluxes)
     rowdf = pd.DataFrame(row, index = [NUM])
     df = pd.concat([df, rowdf], ignore_index=True)
+    #nts: specFluxes array is alr outputted (ie. savde to directory) in the extracting() function
 
-    #idk if I wanna do a pyplot but nvm think about it later lol
-    #nts: specFluxes array is alr outputted in the extracting() function
-
+    
+# FILE I/O: export findings    
 pd.DataFrame(df).to_csv(GENRE + " spectral flux.csv") #please input the relevant array and desired file name
 
 
