@@ -14,7 +14,7 @@ row={}
 DURATION = 4
 OVERLAP = 0.5
 
-#histogram settings
+#histogram settings (for plotting)
 
 BIN = 1 #histogram width
 RANGE = range(-120, 0, BIN)
@@ -25,12 +25,20 @@ RANGE = range(-120, 0, BIN)
 #packages #define
 
 from scipy.io import wavfile
-import matplotlib.pyplot as plt
 import numpy as np
 
 SAMPLERATE = 48000
 
-# CONVERT TO LOG SCALE, required functions and definitions.
+#misc functions (like file i/o)
+
+def filenameTrackNo(num, dp, TYPE, aob, tags):
+    numS = str(num)
+    while (len(numS)<dp):
+        numS = "0" + numS
+    return aob + numS + tags + TYPE
+
+#function defs and #define for dBFS conversion
+
 from math import log10
 
 MAXAMPLITUDE = 2**31 #32-bit PCM .wav encoding
@@ -48,14 +56,7 @@ def dBFS_array(amplitudes, MAXAMPLITUDE, EPSILON):
         v.append(20*log10(v_i))
     return v
 
-# other functions and defs:
-
-def filenameTrackNo(num, dp, TYPE, aob, tags):
-    numS = str(num)
-    while (len(numS)<dp):
-        numS = "0" + numS
-    return aob + numS + tags + TYPE
-
+#loudness features function defs:
 
 def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #take in track. find short-term peaks
     arr = [] #declare array to store peaks
@@ -102,7 +103,7 @@ def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 ############ EXCECUTION OF CODE ############
 
 for i in range(TRACKS):
-    trackPeaks = []
+    trackPeaks = [] #reset track before loop
     trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
    
     #find features, update table
@@ -119,16 +120,6 @@ for i in range(TRACKS):
     row["N"] = len(trackPeaks)
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
-    #export histogram plots
-    plt.hist(trackPeaks, bins = RANGE, density=True, color='y')
-    plt.title(GENRE + ": track" + str(i+1))
-    plt.xlabel("dBFS")
-    plt.ylabel("% of segments in volume range")
-    plt.vlines(large, 0, 0.05, label="loudest", color='r', linestyles='dashed')
-    plt.vlines(small, 0, 0.05, label="softest", color='b', linestyles='dashed')
-    plt.vlines(ave, 0, 0.05, label="mean", color='g', linestyles='dashed')
-    plt.savefig(filenameTrackNo(i+1, 2, ".png", GENRE, "histogram"))
-    plt.clf()
     #export trackPeaks array
     np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "trackPeaks"), trackPeaks)
 
