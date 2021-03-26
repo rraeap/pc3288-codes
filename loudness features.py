@@ -14,11 +14,6 @@ row={}
 DURATION = 4
 OVERLAP = 0.5
 
-#histogram settings (for plotting)
-
-BIN = 1 #histogram width
-RANGE = range(-120, 0, BIN)
-
 
 ############# START OF CODES #############
 
