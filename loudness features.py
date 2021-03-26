@@ -53,7 +53,7 @@ def dBFS_array(amplitudes, MAXAMPLITUDE, EPSILON):
 
 #loudness features function defs:
 
-def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #take in track. find short-term peaks
+def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature (ie. segment peaks), traverse the whole track
     arr = [] #declare array to store peaks
     
     #set starting point
