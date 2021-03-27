@@ -1,7 +1,7 @@
 #directory settings (change as necessary)
 TRACKS = 0 #number of tracks
 GENRE = ""
-DP = 2 #number of decimal places for track
+DP = 5 #number of decimal places for track
 
 #this program will find:
 
@@ -46,7 +46,7 @@ def frame(segment, startpt, FRAMESIZE):
 def segment(track, SAMPLERATE): # this version just scans the entire track. cut into segments manually on excel or otherwise
     
     #start from start of track
-    ALLOWANCE = 2 #allowance in case of silence from recording
+    ALLOWANCE = 0 #no need allowance for gtzan
     start = ALLOWANCE * SAMPLERATE
     
     #create segment
