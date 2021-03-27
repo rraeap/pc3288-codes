@@ -54,6 +54,32 @@ def segment(track, SAMPLERATE): # this version just scans the entire track. cut 
     seg = track[start:len(track)-start]
     return seg
 
+#spectral shape features function defs:
+
+def centroid(y, FREQBINS, FRAMESIZE, SAMPLERATE): #y = abs(FF.rfft(frameArr))
+    centroid = np.sum(y*FREQBINS)/np.sum(y)
+    return centroid
+  
+def rolloff(y, FREQBINS, FRAMESIZE, SAMPLERATE):
+    PERCENTAGE = 0.85
+    rolloff = 0
+    cutoffSum = np.sum(y*FREQBINS) * PERCENTAGE
+    #sum from first bin to last bin until hit cutoffSum. then return rolloff frequency
+    cu = 0 #i cant rmb the real name for the cummulative thing but anw
+    binNo = 0
+    while(cu<cutoffSum):
+        cu = cu + FREQBINS[binNo]*y[binNo]
+        binNo = binNo + 1
+    return FREQBINS[binNo]
+  
+#! spectral slope
+
+def slope(y):
+  #i think it's just a LLS fit of the spectrum then return the gradient or intercept idk
+  specSlope = 0
+  return specSlope
+
+
 #spectral flux function defs:
 
 def spectralFlux(segment, start, FRAMESIZE):
@@ -112,37 +138,32 @@ for NUM in range(1, TRACKS+1):
     trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
     frameFFTs = []
     
+    frameCurrent_FFT = []
+    framePrevious_FFT = []
+    
     #arrays for features across all frames
     specFluxes = []
     
-    for frameNo in range(): #cycle through all frames
+    N = 0 #number of frames. 
+    
+    frameNo = 0
+    while (frameNo*FRAMESIZE <= len(trackLPCM)-FRAMESIZE):
         #get FFT of current frame
-        #append to frameFFTs array
-        
+        frameCurrent = frame(trackLPCM, frameNo*FRAMESIZE, FRAMESIZE)
+        frameCurrent_FFT = abs(FF.rfft(frameCurrent))
+           
         #find and store centroid, rolloff, and slope of current frame
         
         #if frame is not first frame,
-        #compare spectra for current and previous frame to get spec flux.
- 
-
-#OLD for loop / fake main() //delete later
-
-for NUM in range(1, TRACKS+1):
-    specFluxes = [] #reset fluxes before loop
-    specFluxes = extracting(NUM, SAMPLERATE, FRAMESIZE, OVERLAP) #extracting will save qty as .txt in directory.
-    #exporting to dataframe
-    ave = np.mean(specFluxes)
-    large = np.max(specFluxes)
-    small = np.min(specFluxes)
-    row["average spec.flux"] = ave
-    row["greatest spec.flux"] = large
-    row["smallest spec.flux"] = small
-    row["stdev"] = np.std(specFluxes)
-    row["N"] = len(specFluxes)
-    rowdf = pd.DataFrame(row, index = [NUM])
-    df = pd.concat([df, rowdf], ignore_index=True)
-    #nts: specFluxes array is alr outputted (ie. savde to directory) in the extracting() function
-
+        if framePrevious_FFT != []:
+            #compare spectra for current and previous frame to get spec flux.
+            
+        #store data in df, export to .txt
+        
+        framePrevious_FFT = frameCurrent_FFT
+        N += 1
+    
+  
     
 # FILE I/O: export findings    
 pd.DataFrame(df).to_csv(GENRE + " spectral flux.csv") #please input the relevant array and desired file name
