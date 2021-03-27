@@ -39,6 +39,8 @@ def filenameTrackNo(num, dp, TYPE, aob, tags):
 
 #function defs for frame making (short-term features)
 
+FREQBINS = abs(FF.rfftfreq(FRAMESIZE, 1/SAMPLERATE)) 
+
 def frame(segment, startpt, FRAMESIZE):
     return segment[startpt:startpt+FRAMESIZE]*np.hanning(FRAMESIZE)
 
@@ -77,6 +79,13 @@ def segment_spectralFlux(segment, FRAMESIZE, overlap):
 
 ############ feature extractor ############
 
+def extracting(num, GENRE): #input track number (int) and genre (genre can be NULL too ofc.)
+    #import file
+    z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", GENRE,"")) #assumes .wav uses MONO channel
+    return track
+
+
+#delete the other extracting def later
 def extracting(num, SAMPLERATE, FRAMESIZE, OVERLAP): #input track number (int)
     #import file
     z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", "","")) #assumes .wav uses MONO channel
@@ -96,6 +105,27 @@ def extracting(num, SAMPLERATE, FRAMESIZE, OVERLAP): #input track number (int)
 
 
 ############ EXCECUTION OF CODE ############
+
+for NUM in range(1, TRACKS+1):
+    # arrays for "raw" track/spectra
+    trackLPCM = [] # should be a good idea
+    trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
+    frameFFTs = []
+    
+    #arrays for features across all frames
+    specFluxes = []
+    
+    for frameNo in range(): #cycle through all frames
+        #get FFT of current frame
+        #append to frameFFTs array
+        
+        #find and store centroid, rolloff, and slope of current frame
+        
+        #if frame is not first frame,
+        #compare spectra for current and previous frame to get spec flux.
+ 
+
+#OLD for loop / fake main() //delete later
 
 for NUM in range(1, TRACKS+1):
     specFluxes = [] #reset fluxes before loop
