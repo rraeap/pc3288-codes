@@ -124,9 +124,6 @@ for NUM in range(1, TRACKS+1):
             frameSpecFlux = specFlux(frameCurrent_FFT, framePrevious_FFT)
             specFluxes.append(frameSpecFlux)
             
-        #export to .txt
-        
-        
         #necessary updates
         framePrevious_FFT = frameCurrent_FFT
         N += 1
@@ -134,16 +131,23 @@ for NUM in range(1, TRACKS+1):
         #go to next frame
         frameStart += int(FRAMESIZE*OVERLAP)
         ##end while
-        
+    
+    
+    #export to .txt
+    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "centroids"), centroids)
+    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "rolloffs"), rolloffs)
+    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "specFluxes"), specFluxes)
+    
     #update track's average features in df table
     row["ave. centroid"] = np.mean(centroids)
     row["ave. rolloff"] = np.mean(rolloffs)
     row["ave. spec.flux"] = np.mean(specFluxes)
     row["N"] = N
+    rowdf = pd.DataFrame(row, index = [i])
+    df = pd.concat([df, rowdf], ignore_index=True)
         
     #end of loop. go to next track.
     
-  
     
 # FILE I/O: export findings    
 pd.DataFrame(df).to_csv(GENRE + " spectral features.csv") #please input the relevant array and desired file name
