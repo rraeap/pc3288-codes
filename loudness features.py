@@ -1,5 +1,5 @@
 #directory settings (pls change as necessary)
-TRACKS = 0 #Number of tracks
+TRACKS = 100 #Number of tracks
 GENRE = ""
 DP = 5
 
@@ -23,7 +23,7 @@ OVERLAP = 0.5
 from scipy.io import wavfile
 import numpy as np
 
-SAMPLERATE = 48000
+SAMPLERATE = 22050
 
 #misc functions (like file i/o)
 
@@ -100,7 +100,7 @@ def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 
 for i in range(TRACKS):
     trackPeaks = [] #reset track before loop
-    trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
+    trackPeaks = extracting(i, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
    
     #find features, update table
     ave = np.mean(trackPeaks)
@@ -117,7 +117,7 @@ for i in range(TRACKS):
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
     #export trackPeaks array
-    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
+    np.savetxt(filenameTrackNo(i, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
 
 
 # FILE I/O: export findings
