@@ -1,7 +1,7 @@
 #directory settings (pls change as necessary)
 TRACKS = 0 #Number of tracks
 GENRE = ""
-DP = 2
+DP = 5
 
 ## this program will find:
 
@@ -58,7 +58,7 @@ def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term 
     arr = [] #declare array to store peaks
     
     #set starting point
-    ALLOWANCE = 2 #two sec allowance for now
+    ALLOWANCE = 0 #no need allowance for gtzan
     trackStart = ALLOWANCE*SAMPLERATE
     segmentSize = DURATION*SAMPLERATE
     
