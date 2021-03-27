@@ -1,5 +1,3 @@
-## COMBINE SPECTRAL FLUX AND SPECTRAL SHAPE FEATURES codes. bc might as well. (see other branches)
-
 #directory settings (change as necessary)
 TRACKS = 0 #number of tracks
 GENRE = ""
