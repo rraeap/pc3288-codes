@@ -12,7 +12,7 @@ row={}
 #based on the following settings of:
 
 #segment settings
-DURATION = 4
+DURATION = 3
 OVERLAP = 0.5
 
 
