@@ -7,7 +7,7 @@ GENRE = ""
 #this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average spec.flux", "greatest spec.flux", "smallest spec.flux", "stdev", "N"])
+df = pd.DataFrame(columns = ["ave. centroid", "ave. rolloff", "ave. spec.flux", "N"])
 row={}
 
 #based on the following settings of:
@@ -56,11 +56,11 @@ def segment(track, SAMPLERATE): # this version just scans the entire track. cut 
 
 #spectral shape features function defs:
 
-def centroid(y, FREQBINS, FRAMESIZE, SAMPLERATE): #y = abs(FF.rfft(frameArr))
+def centroid(y, FREQBINS): #y = abs(FF.rfft(frameArr))
     centroid = np.sum(y*FREQBINS)/np.sum(y)
     return centroid
   
-def rolloff(y, FREQBINS, FRAMESIZE, SAMPLERATE):
+def rolloff(y, FREQBINS):
     PERCENTAGE = 0.85
     rolloff = 0
     cutoffSum = np.sum(y*FREQBINS) * PERCENTAGE
@@ -71,59 +71,16 @@ def rolloff(y, FREQBINS, FRAMESIZE, SAMPLERATE):
         cu = cu + FREQBINS[binNo]*y[binNo]
         binNo = binNo + 1
     return FREQBINS[binNo]
-  
-#! spectral slope
+ 
+def specFlux(y1, y0):
+    return abs(sum(y1)/max(y1)-sum(y0)/max(y0))
 
-def slope(y):
-  #i think it's just a LLS fit of the spectrum then return the gradient or intercept idk
-  specSlope = 0
-  return specSlope
-
-
-#spectral flux function defs:
-
-def spectralFlux(segment, start, FRAMESIZE):
-    frame1 = frame(segment, start, FRAMESIZE)
-    frame2 = frame(segment, start+FRAMESIZE, FRAMESIZE)
-    freqComponents1 = abs(FF.rfft(frame1))
-    freqComponents2 = abs(FF.rfft(frame2))
-    return abs(sum(freqComponents1)/max(freqComponents1)-sum(freqComponents2)/max(freqComponents2))
-
-def segment_spectralFlux(segment, FRAMESIZE, overlap):
-    N = len(segment)
-    start = 0 #start at first sample
-    arr = [0] #initialize array
-    #some loop control, to cycle through the whole segment
-    while(start <= N-2*FRAMESIZE):
-        if (start == 0):
-            arr[0] = spectralFlux(segment, start, FRAMESIZE)
-        else:
-            arr.append(spectralFlux(segment, start, FRAMESIZE))
-        start += int(FRAMESIZE*overlap) #set new starting point
-    return arr #arr storing all the flux values
-
-
-############ feature extractor ############
+# track importer
 
 def extracting(num, GENRE): #input track number (int) and genre (genre can be NULL too ofc.)
     #import file
     z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", GENRE,"")) #assumes .wav uses MONO channel
     return track
-
-
-#delete the other extracting def later
-def extracting(num, SAMPLERATE, FRAMESIZE, OVERLAP): #input track number (int)
-    #import file
-    z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", "","")) #assumes .wav uses MONO channel
-    
-    #cut segment and find qty: specFlux
-    seg = segment(track, SAMPLERATE)
-    qty = segment_spectralFlux(seg, FRAMESIZE, OVERLAP) #change the RHS as required
-    
-    #note info, then export qty to .txt (change as necessary)
-    aob = "[specFlux-" + "fr" + str(FRAMESIZE) +"] track"
-    np.savetxt(filenameTrackNo(num, 2, ".txt", aob, ""), qty)
-    return qty
 
 
 ############## END OF DEFINITIONS ##############
@@ -142,28 +99,51 @@ for NUM in range(1, TRACKS+1):
     framePrevious_FFT = []
     
     #arrays for features across all frames
+    centroids = []
+    rolloffs= []
     specFluxes = []
     
-    N = 0 #number of frames. 
+    N = 0 #count number of frames. 
+    frameStart = 0
     
-    frameNo = 0
-    while (frameNo*FRAMESIZE <= len(trackLPCM)-FRAMESIZE):
+    while (frameStart <= len(trackLPCM)-FRAMESIZE):
         #get FFT of current frame
-        frameCurrent = frame(trackLPCM, frameNo*FRAMESIZE, FRAMESIZE)
+        frameCurrent = frame(trackLPCM, frameStart, FRAMESIZE)
         frameCurrent_FFT = abs(FF.rfft(frameCurrent))
            
-        #find and store centroid, rolloff, and slope of current frame
+        #find and store centroid, and rolloff of current frame
+        frameCentroid = centroid(frameCurrent_FFT, FREQBINS)
+        centroids.append(frameCentroid)
+        frameRolloff = rolloff(frameCurrent_FFT, FREQBINS)
+        rolloffs.append(frameRolloff)
         
+        frameSpecFlux = 0
         #if frame is not first frame,
         if framePrevious_FFT != []:
             #compare spectra for current and previous frame to get spec flux.
+            frameSpecFlux = specFlux(frameCurrent_FFT, framePrevious_FFT)
+            specFluxes.append(frameSpecFlux)
             
-        #store data in df, export to .txt
+        #export to .txt
         
+        
+        #necessary updates
         framePrevious_FFT = frameCurrent_FFT
         N += 1
+        
+        #go to next frame
+        frameStart += int(FRAMESIZE*OVERLAP)
+        ##end while
+        
+    #update track's average features in df table
+    row["ave. centroid"] = np.mean(centroids)
+    row["ave. rolloff"] = np.mean(rolloffs)
+    row["ave. spec.flux"] = np.mean(specFluxes)
+    row["N"] = N
+        
+    #end of loop. go to next track.
     
   
     
 # FILE I/O: export findings    
-pd.DataFrame(df).to_csv(GENRE + " spectral flux.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + " spectral features.csv") #please input the relevant array and desired file name
