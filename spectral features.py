@@ -1,5 +1,5 @@
 #directory settings (change as necessary)
-TRACKS = 0 #number of tracks
+TRACKS = 100 #number of tracks
 GENRE = ""
 DP = 5 #number of decimal places for track
 
@@ -26,7 +26,7 @@ from scipy.io import wavfile
 import numpy as np
 import scipy.fft as FF
 
-SAMPLERATE = 48000
+SAMPLERATE = 22050
 
 #misc functions (like file i/o)
 
@@ -88,7 +88,7 @@ def extracting(num, GENRE): #input track number (int) and genre (genre can be NU
 
 ############ EXCECUTION OF CODE ############
 
-for NUM in range(1, TRACKS+1):
+for NUM in range(0, TRACKS):
     # arrays for "raw" track/spectra
     trackLPCM = [] # should be a good idea
     trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
