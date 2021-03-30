@@ -54,23 +54,22 @@ def dBFS_array(amplitudes, MAXAMPLITUDE, EPSILON):
 
 #loudness features function defs:
 
-def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature (ie. segment peaks), traverse the whole track
-    arr = [] #declare array to store peaks
+def track_RMS(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature, traverse the whole track
+    arr = [] #declare array to store RMS of each segment
     
     #set starting point
     ALLOWANCE = 0 #no need allowance for gtzan
     trackStart = ALLOWANCE*SAMPLERATE
     segmentSize = DURATION*SAMPLERATE
     
-    #convert from LPCM to dBFS
-    track = dBFS_array(trackFromWav, 2**31, 0.000001) #zz python y no #define and no globals://
-
     #"visit" all segments
     for segmentStart in range(trackStart, len(track)-ALLOWANCE*SAMPLERATE, int(DURATION*SAMPLERATE*OVERLAP)):
-        arr.append(max(track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]))
+        arr.append(segment_RMS(track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]))
     
     return arr
 
+def segment_RMS(segment): #take in segment. return its RMS
+    return sqrt(sum(segment**segment)/len(segment)
 
 def percentageLow(trackPeaks): #input array containing all track peaks
     #code
@@ -107,10 +106,10 @@ for i in range(TRACKS):
     large = np.max(trackPeaks)
     small = np.min(trackPeaks)
     percentageL = percentageLow_value(trackPeaks)
-    row["average peak"] = ave
-    row["largest peak"] = large
-    row["smallest peak"] = small
-    row["loudness range"] = large-small
+    row["average rms"] = ave
+    row["largest rms"] = large
+    row["smallest rms"] = small
+    row["diff. in energy"] = large-small
     row["% of low energy"] = percentageL
     row["stdev"] = np.std(trackPeaks)
     row["N"] = len(trackPeaks)
