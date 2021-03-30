@@ -1,5 +1,5 @@
 #directory settings (change as necessary)
-TRACKS = 0 #number of tracks
+TRACKS = 10 #number of tracks
 GENRE = ""
 DP = 2 #number of decimal places for track
 
