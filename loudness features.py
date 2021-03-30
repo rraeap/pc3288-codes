@@ -120,7 +120,7 @@ for i in range(TRACKS):
 
 
 # FILE I/O: export findings
-pd.DataFrame(df).to_csv(GENRE + "loudness features.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + "loudness features - RMS.csv") #please input the relevant array and desired file name
 
 
 
