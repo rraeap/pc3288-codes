@@ -6,7 +6,7 @@ DP = 2 #number of decimal places for track
 #this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "N"])
+df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "channel", "N"])
 row={}
 
 #based on the following settings of:
@@ -145,6 +145,7 @@ for NUM in range(1, TRACKS+1):
     row["rolloff stdev"] = np.std(rolloffs)
     row["ave. spec.flux"] = np.mean(specFluxes)
     row["spec.flux stdev"] = np.std(specFluxes)
+    row["channel"] = "left"
     row["N"] = N
     rowdf = pd.DataFrame(row, index = [NUM])
     df = pd.concat([df, rowdf], ignore_index=True)
