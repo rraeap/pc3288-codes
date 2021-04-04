@@ -78,7 +78,8 @@ def specFlux(y1, y0):
 
 def extracting(num, GENRE): #input track number (int) and genre (genre can be NULL too ofc.)
     #import file
-    z, track = wavfile.read(filenameTrackNo(num, DP, ".wav", GENRE,"")) #assumes .wav uses MONO channel
+    z, channels = wavfile.read(filenameTrackNo(num, DP, ".wav", GENRE,"")) #assumes .wav uses MONO channel
+    track = [:0] #left channel
     return track
 
 
