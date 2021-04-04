@@ -88,7 +88,7 @@ def percentageLow_value(trackPeaks):
 def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 #import track
     z, channels = wavfile.read(filenameTrackNo(num, DP, ".wav", "", ""))
-    track = channels[:,0]
+    track = channels[:,1]
 # FIND PEAKS
     return track_segmentPeaks(track, DURATION, SAMPLERATE, OVERLAP)
 
