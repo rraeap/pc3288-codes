@@ -134,9 +134,9 @@ for NUM in range(1, TRACKS+1):
     
     
     #export to .txt
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "centroids"), centroids)
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "rolloffs"), rolloffs)
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "specFluxes"), specFluxes)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "centroids -left"), centroids)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "rolloffs -left"), rolloffs)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "specFluxes -left"), specFluxes)
     
     #update track's average features in df table
     row["ave. centroid"] = np.mean(centroids)
@@ -154,4 +154,4 @@ for NUM in range(1, TRACKS+1):
     
     
 # FILE I/O: export findings    
-pd.DataFrame(df).to_csv(GENRE + "spectral features.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + "spectral features -left.csv") #please input the relevant array and desired file name
