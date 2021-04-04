@@ -6,6 +6,7 @@ DP = 2 #number of decimal places for track
 #this program will find:
 
 import pandas as pd
+
 df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "N"])
 row={}
 
