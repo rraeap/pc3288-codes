@@ -6,7 +6,7 @@ DP = 2
 ## this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "N"])
+df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "channel", "N"])
 row={}
 
 #based on the following settings of:
@@ -87,7 +87,8 @@ def percentageLow_value(trackPeaks):
 
 def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 #import track
-    z, track = wavfile.read(filenameTrackNo(num, DP, ".wav", "", ""))
+    z, channels = wavfile.read(filenameTrackNo(num, DP, ".wav", "", ""))
+    track = channels[:,0]
 # FIND PEAKS
     return track_segmentPeaks(track, DURATION, SAMPLERATE, OVERLAP)
 
@@ -113,6 +114,7 @@ for i in range(TRACKS):
     row["loudness range"] = large-small
     row["% of low energy"] = percentageL
     row["stdev"] = np.std(trackPeaks)
+    row["channel"] = "left"
     row["N"] = len(trackPeaks)
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
