@@ -6,7 +6,7 @@ DP = 5
 ## this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "N"])
+df = pd.DataFrame(columns = ["average rms", "largest rms", "smallest rms", "diff. in energy", "% of low energy", "stdev", "N"])
 row={}
 
 #based on the following settings of:
@@ -24,6 +24,7 @@ from scipy.io import wavfile
 import numpy as np
 
 SAMPLERATE = 22050
+BYTES = 2
 
 #misc functions (like file i/o)
 
@@ -37,7 +38,7 @@ def filenameTrackNo(num, dp, TYPE, aob, tags):
 
 from math import log10
 
-MAXAMPLITUDE = 2**31 #32-bit PCM .wav encoding
+MAXAMPLITUDE = 2**15 #16-bit PCM .wav encoding
 EPSILON = 0.000001 #arbituary value close to zero, to protect input to log function
 
 def dBFS(amplitude, MAXAMPLITUDE, EPSILON):
@@ -54,6 +55,8 @@ def dBFS_array(amplitudes, MAXAMPLITUDE, EPSILON):
 
 #loudness features function defs:
 
+from audioop import rms
+
 def track_RMS(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature, traverse the whole track
     arr = [] #declare array to store RMS of each segment
     
@@ -64,12 +67,11 @@ def track_RMS(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature, 
     
     #"visit" all segments
     for segmentStart in range(trackStart, len(track)-ALLOWANCE*SAMPLERATE, int(DURATION*SAMPLERATE*OVERLAP)):
-        arr.append(segment_RMS(track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]))
+        seg = track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]
+        arr.append(rms(seg, BYTES))
     
     return arr
 
-def segment_RMS(segment): #take in segment. return its RMS
-    return sqrt(sum(segment**segment)/len(segment)
 
 def percentageLow(trackPeaks): #input array containing all track peaks
     #code
