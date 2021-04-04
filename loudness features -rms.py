@@ -57,7 +57,7 @@ def dBFS_array(amplitudes, MAXAMPLITUDE, EPSILON):
 
 from audioop import rms
 
-def track_RMS(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term feature, traverse the whole track
+def track_RMS(track, DURATION, SAMPLERATE, OVERLAP): #long term feature, traverse the whole track
     arr = [] #declare array to store RMS of each segment
     
     #set starting point
@@ -90,7 +90,7 @@ def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 #import track
     z, track = wavfile.read(filenameTrackNo(num, DP, ".wav", GENRE, ""))
 # FIND PEAKS
-    return track_segmentPeaks(track, DURATION, SAMPLERATE, OVERLAP)
+    return track_RMS(track, DURATION, SAMPLERATE, OVERLAP)
 
 
 ############## END OF DEFINITIONS ##############
@@ -118,7 +118,7 @@ for i in range(TRACKS):
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
     #export trackPeaks array
-    np.savetxt(filenameTrackNo(i, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
+    np.savetxt(filenameTrackNo(i, DP, ".txt", GENRE, "trackRMS"), trackPeaks)
 
 
 # FILE I/O: export findings
