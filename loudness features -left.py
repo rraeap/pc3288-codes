@@ -119,11 +119,11 @@ for i in range(TRACKS):
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
     #export trackPeaks array
-    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
+    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackPeaks -left"), trackPeaks)
 
 
 # FILE I/O: export findings
-pd.DataFrame(df).to_csv(GENRE + "loudness features.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + "loudness features -left.csv") #please input the relevant array and desired file name
 
 
 
