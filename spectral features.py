@@ -1,13 +1,13 @@
-## COMBINE SPECTRAL FLUX AND SPECTRAL SHAPE FEATURES codes. bc might as well. (see other branches)
-
 #directory settings (change as necessary)
-TRACKS = 0 #number of tracks
+TRACKS = 10 #number of tracks
 GENRE = ""
+DP = 2 #number of decimal places for track
 
 #this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["ave. centroid", "ave. rolloff", "ave. spec.flux", "N"])
+
+df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "N"])
 row={}
 
 #based on the following settings of:
@@ -79,7 +79,7 @@ def specFlux(y1, y0):
 
 def extracting(num, GENRE): #input track number (int) and genre (genre can be NULL too ofc.)
     #import file
-    z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", GENRE,"")) #assumes .wav uses MONO channel
+    z, track = wavfile.read(filenameTrackNo(num, DP, ".wav", GENRE,"")) #assumes .wav uses MONO channel
     return track
 
 
@@ -134,20 +134,23 @@ for NUM in range(1, TRACKS+1):
     
     
     #export to .txt
-    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "centroids"), centroids)
-    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "rolloffs"), rolloffs)
-    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "specFluxes"), specFluxes)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "centroids"), centroids)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "rolloffs"), rolloffs)
+    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "specFluxes"), specFluxes)
     
     #update track's average features in df table
     row["ave. centroid"] = np.mean(centroids)
+    row["centroid stdev"] = np.std(centroids)
     row["ave. rolloff"] = np.mean(rolloffs)
+    row["rolloff stdev"] = np.std(rolloffs)
     row["ave. spec.flux"] = np.mean(specFluxes)
+    row["spec.flux stdev"] = np.std(specFluxes)
     row["N"] = N
-    rowdf = pd.DataFrame(row, index = [i])
+    rowdf = pd.DataFrame(row, index = [NUM])
     df = pd.concat([df, rowdf], ignore_index=True)
         
     #end of loop. go to next track.
     
     
 # FILE I/O: export findings    
-pd.DataFrame(df).to_csv(GENRE + " spectral features.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + "spectral features.csv") #please input the relevant array and desired file name

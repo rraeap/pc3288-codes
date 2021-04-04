@@ -1,6 +1,7 @@
 #directory settings (pls change as necessary)
-TRACKS = 0 #Number of tracks
+TRACKS = 10 #Number of tracks
 GENRE = ""
+DP = 2
 
 ## this program will find:
 
@@ -11,7 +12,7 @@ row={}
 #based on the following settings of:
 
 #segment settings
-DURATION = 4
+DURATION = 3
 OVERLAP = 0.5
 
 
@@ -86,7 +87,7 @@ def percentageLow_value(trackPeaks):
 
 def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 #import track
-    z, track = wavfile.read(filenameTrackNo(num, 2, ".wav", "", ""))
+    z, track = wavfile.read(filenameTrackNo(num, DP, ".wav", "", ""))
 # FIND PEAKS
     return track_segmentPeaks(track, DURATION, SAMPLERATE, OVERLAP)
 
@@ -116,11 +117,11 @@ for i in range(TRACKS):
     rowdf = pd.DataFrame(row, index = [i])
     df = pd.concat([df, rowdf], ignore_index=True)
     #export trackPeaks array
-    np.savetxt(filenameTrackNo(i+1, 2, ".txt", GENRE, "trackPeaks"), trackPeaks)
+    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
 
 
 # FILE I/O: export findings
-pd.DataFrame(df).to_csv(GENRE + " loudness features.csv") #please input the relevant array and desired file name
+pd.DataFrame(df).to_csv(GENRE + "loudness features.csv") #please input the relevant array and desired file name
 
 
 
