@@ -1,18 +1,19 @@
 #directory settings (pls change as necessary)
-TRACKS = 10 #Number of tracks
+TRACKS = 1 #Number of tracks
 GENRE = ""
 DP = 2
 
 ## this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "N"])
+df = pd.DataFrame(columns = ["average rms", "largest rms", "smallest rms", "diff. in energy", "% of low energy", "stdev", "segment duration (s)", "N"])
 row={}
 
 #based on the following settings of:
 
-#segment settings
-DURATION = 3
+#segment settings to be tested:
+DURATIONS = [0.5,1,2,3,4,5]
+DURATIONS_str = ["0.5", "1", "2", "3", "4", "5"]
 OVERLAP = 0.5
 
 
@@ -24,6 +25,7 @@ from scipy.io import wavfile
 import numpy as np
 
 SAMPLERATE = 48000
+BYTES = 4
 
 #misc functions (like file i/o)
 
@@ -37,7 +39,7 @@ def filenameTrackNo(num, dp, TYPE, aob, tags):
 
 from math import log10
 
-MAXAMPLITUDE = 2**31 #32-bit PCM .wav encoding
+MAXAMPLITUDE = 2**15 #16-bit PCM .wav encoding
 EPSILON = 0.000001 #arbituary value close to zero, to protect input to log function
 
 def dBFS(amplitude, MAXAMPLITUDE, EPSILON):
@@ -67,10 +69,9 @@ def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term 
 
     #"visit" all segments
     for segmentStart in range(trackStart, len(track)-ALLOWANCE*SAMPLERATE, int(DURATION*SAMPLERATE*OVERLAP)):
-        arr.append(max(track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]))
+        arr.append(max(track[segmentStart:int(segmentStart+DURATION*SAMPLERATE)]))
     
     return arr
-
 
 def percentageLow(trackPeaks): #input array containing all track peaks
     #code
@@ -98,31 +99,31 @@ def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 
 ############ EXCECUTION OF CODE ############
 
-for i in range(TRACKS):
-    trackPeaks = [] #reset track before loop
-    trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
-   
-    #find features, update table
-    ave = np.mean(trackPeaks)
-    large = np.max(trackPeaks)
-    small = np.min(trackPeaks)
-    percentageL = percentageLow_value(trackPeaks)
-    row["average peak"] = ave
-    row["largest peak"] = large
-    row["smallest peak"] = small
-    row["loudness range"] = large-small
-    row["% of low energy"] = percentageL
-    row["stdev"] = np.std(trackPeaks)
-    row["N"] = len(trackPeaks)
-    rowdf = pd.DataFrame(row, index = [i])
-    df = pd.concat([df, rowdf], ignore_index=True)
-    #export trackPeaks array
-    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackPeaks"), trackPeaks)
+for m in range(len(DURATIONS)):
+    row["segment duration (s)"] = DURATIONS_str[m]
+    DURATION = DURATIONS[m]
+
+    for i in range(TRACKS):
+        trackPeaks = [] #reset track before loop
+        trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
+       
+        #find features, update table
+        ave = np.mean(trackPeaks)
+        large = np.max(trackPeaks)
+        small = np.min(trackPeaks)
+        percentageL = percentageLow_value(trackPeaks)
+        row["average rms"] = ave
+        row["largest rms"] = large
+        row["smallest rms"] = small
+        row["diff. in energy"] = large-small
+        row["% of low energy"] = percentageL
+        row["stdev"] = np.std(trackPeaks)
+        row["N"] = len(trackPeaks)
+        rowdf = pd.DataFrame(row, index = [i])
+        df = pd.concat([df, rowdf], ignore_index=True)
+        #export trackPeaks array
+        np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, DURATIONS_str[m] + " trackPeaks"), trackPeaks)
 
 
 # FILE I/O: export findings
-pd.DataFrame(df).to_csv(GENRE + "loudness features.csv") #please input the relevant array and desired file name
-
-
-
-
+pd.DataFrame(df).to_csv(GENRE + "loudness features - peaks.csv") #please input the relevant array and desired file name
