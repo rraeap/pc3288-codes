@@ -1,18 +1,19 @@
 #directory settings (pls change as necessary)
-TRACKS = 10 #Number of tracks
+TRACKS = 1 #Number of tracks
 GENRE = ""
 DP = 2
 
 ## this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average rms", "largest rms", "smallest rms", "diff. in energy", "% of low energy", "stdev", "genre", "N"])
+df = pd.DataFrame(columns = ["average rms", "largest rms", "smallest rms", "diff. in energy", "% of low energy", "stdev", "segment duration (s)", "N"])
 row={}
 
 #based on the following settings of:
 
-#segment settings
-DURATION = 3
+#segment settings to be tested:
+DURATIONS = [0.5,1,2,3,4,5]
+DURATIONS_str = ["0.5", "1", "2", "3", "4", "5"]
 OVERLAP = 0.5
 
 
@@ -66,8 +67,8 @@ def track_RMS(track, DURATION, SAMPLERATE, OVERLAP): #long term feature, travers
     segmentSize = DURATION*SAMPLERATE
     
     #"visit" all segments
-    for segmentStart in range(trackStart, len(track)-ALLOWANCE*SAMPLERATE, int(DURATION*SAMPLERATE*OVERLAP)):
-        seg = track[segmentStart:(segmentStart+DURATION*SAMPLERATE)]
+    for segmentStart in range(trackStart, len(track)-int(ALLOWANCE*SAMPLERATE), int(DURATION*SAMPLERATE*OVERLAP)):
+        seg = track[segmentStart:int(segmentStart+DURATION*SAMPLERATE)]
         arr.append(rms(seg, BYTES))
     
     return arr
@@ -99,28 +100,30 @@ def extracting(num, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON):
 
 ############ EXCECUTION OF CODE ############
 
-row["genre"] = GENRE
+for m in range(len(DURATIONS)):
+    row["segment duration (s)"] = DURATIONS_str[m]
+    DURATION = DURATIONS[m]
 
-for i in range(TRACKS):
-    trackPeaks = [] #reset track before loop
-    trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
-   
-    #find features, update table
-    ave = np.mean(trackPeaks)
-    large = np.max(trackPeaks)
-    small = np.min(trackPeaks)
-    percentageL = percentageLow_value(trackPeaks)
-    row["average rms"] = ave
-    row["largest rms"] = large
-    row["smallest rms"] = small
-    row["diff. in energy"] = large-small
-    row["% of low energy"] = percentageL
-    row["stdev"] = np.std(trackPeaks)
-    row["N"] = len(trackPeaks)
-    rowdf = pd.DataFrame(row, index = [i])
-    df = pd.concat([df, rowdf], ignore_index=True)
-    #export trackPeaks array
-    np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, "trackRMS"), trackPeaks)
+    for i in range(TRACKS):
+        trackPeaks = [] #reset track before loop
+        trackPeaks = extracting(i+1, DURATION, OVERLAP, SAMPLERATE, MAXAMPLITUDE, EPSILON)
+       
+        #find features, update table
+        ave = np.mean(trackPeaks)
+        large = np.max(trackPeaks)
+        small = np.min(trackPeaks)
+        percentageL = percentageLow_value(trackPeaks)
+        row["average rms"] = ave
+        row["largest rms"] = large
+        row["smallest rms"] = small
+        row["diff. in energy"] = large-small
+        row["% of low energy"] = percentageL
+        row["stdev"] = np.std(trackPeaks)
+        row["N"] = len(trackPeaks)
+        rowdf = pd.DataFrame(row, index = [i])
+        df = pd.concat([df, rowdf], ignore_index=True)
+        #export trackPeaks array
+        np.savetxt(filenameTrackNo(i+1, DP, ".txt", GENRE, DURATIONS_str[m] + " trackRMS"), trackPeaks)
 
 
 # FILE I/O: export findings
