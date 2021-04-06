@@ -1,5 +1,5 @@
 #directory settings (change as necessary)
-TRACKS = 10 #number of tracks
+TRACKS = 1 #number of tracks
 GENRE = ""
 DP = 2 #number of decimal places for track
 
@@ -7,16 +7,17 @@ DP = 2 #number of decimal places for track
 
 import pandas as pd
 
-df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "N"])
+df = pd.DataFrame(columns = ["ave. centroid", "centroid stdev", "ave. rolloff", "rolloff stdev", "ave. spec.flux", "spec.flux stdev", "frame duration (ms)", "N"])
 row={}
 
 #based on the following settings of:
 
 #segment settings: no segmentation. to vary after getting results and check what is a suitable length to be used as "texture window" 
 
-#frame settings:
-FRAMESIZE = 2**10 #~20ms per frame
-OVERLAP = 0.5
+#frame settings to be tested:
+FRAMESIZES = [2**8, 2**9, 2**10, 2**11, 2**12] #~10, 20ms etc... per frame
+FRAMESIZES_str = ["5.3", "10.6", "21.3", "42.6", "85.3"]
+OVERLAPS = 0.5
 
 
 ############# START OF CODES #############
@@ -89,67 +90,73 @@ def extracting(num, GENRE): #input track number (int) and genre (genre can be NU
 
 ############ EXCECUTION OF CODE ############
 
-for NUM in range(1, TRACKS+1):
-    # arrays for "raw" track/spectra
-    trackLPCM = [] # should be a good idea
-    trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
-    frameFFTs = []
+for m in range(len(FRAMESIZES)):
+    #set framesize for testing
+    row["frame duration (ms)"] = FRAMESIZES_str[m]
+    FRAMESIZE = FRAMESIZES[m]
+    FREQBINS = abs(FF.rfftfreq(FRAMESIZE, 1/SAMPLERATE))
     
-    frameCurrent_FFT = []
-    framePrevious_FFT = []
-    
-    #arrays for features across all frames
-    centroids = []
-    rolloffs= []
-    specFluxes = []
-    
-    N = 0 #count number of frames. 
-    frameStart = 0
-    
-    while (frameStart <= len(trackLPCM)-FRAMESIZE):
-        #get FFT of current frame
-        frameCurrent = frame(trackLPCM, frameStart, FRAMESIZE)
-        frameCurrent_FFT = abs(FF.rfft(frameCurrent))
-           
-        #find and store centroid, and rolloff of current frame
-        frameCentroid = centroid(frameCurrent_FFT, FREQBINS)
-        centroids.append(frameCentroid)
-        frameRolloff = rolloff(frameCurrent_FFT, FREQBINS)
-        rolloffs.append(frameRolloff)
+    for NUM in range(1, TRACKS+1):
+        # arrays for "raw" track/spectra
+        trackLPCM = [] # should be a good idea
+        trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
+        frameFFTs = []
         
-        frameSpecFlux = 0
-        #if frame is not first frame,
-        if framePrevious_FFT != []:
-            #compare spectra for current and previous frame to get spec flux.
-            frameSpecFlux = specFlux(frameCurrent_FFT, framePrevious_FFT)
-            specFluxes.append(frameSpecFlux)
+        frameCurrent_FFT = []
+        framePrevious_FFT = []
+        
+        #arrays for features across all frames
+        centroids = []
+        rolloffs= []
+        specFluxes = []
+        
+        N = 0 #count number of frames. 
+        frameStart = 0
+        
+        while (frameStart <= len(trackLPCM)-FRAMESIZE):
+            #get FFT of current frame
+            frameCurrent = frame(trackLPCM, frameStart, FRAMESIZE)
+            frameCurrent_FFT = abs(FF.rfft(frameCurrent))
+               
+            #find and store centroid, and rolloff of current frame
+            frameCentroid = centroid(frameCurrent_FFT, FREQBINS)
+            centroids.append(frameCentroid)
+            frameRolloff = rolloff(frameCurrent_FFT, FREQBINS)
+            rolloffs.append(frameRolloff)
             
-        #necessary updates
-        framePrevious_FFT = frameCurrent_FFT
-        N += 1
+            frameSpecFlux = 0
+            #if frame is not first frame,
+            if framePrevious_FFT != []:
+                #compare spectra for current and previous frame to get spec flux.
+                frameSpecFlux = specFlux(frameCurrent_FFT, framePrevious_FFT)
+                specFluxes.append(frameSpecFlux)
+                
+            #necessary updates
+            framePrevious_FFT = frameCurrent_FFT
+            N += 1
+            
+            #go to next frame
+            frameStart += int(FRAMESIZE*OVERLAP)
+            ##end while
         
-        #go to next frame
-        frameStart += int(FRAMESIZE*OVERLAP)
-        ##end while
-    
-    
-    #export to .txt
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "centroids"), centroids)
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "rolloffs"), rolloffs)
-    np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, "specFluxes"), specFluxes)
-    
-    #update track's average features in df table
-    row["ave. centroid"] = np.mean(centroids)
-    row["centroid stdev"] = np.std(centroids)
-    row["ave. rolloff"] = np.mean(rolloffs)
-    row["rolloff stdev"] = np.std(rolloffs)
-    row["ave. spec.flux"] = np.mean(specFluxes)
-    row["spec.flux stdev"] = np.std(specFluxes)
-    row["N"] = N
-    rowdf = pd.DataFrame(row, index = [NUM])
-    df = pd.concat([df, rowdf], ignore_index=True)
         
-    #end of loop. go to next track.
+        #export to .txt
+        np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, FRAMESIZES_str[m] + " centroids"), centroids)
+        np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, FRAMESIZES_str[m] + " rolloffs"), rolloffs)
+        np.savetxt(filenameTrackNo(NUM, DP, ".txt", GENRE, FRAMESIZES_str[m] + " specFluxes"), specFluxes)
+        
+        #update track's average features in df table
+        row["ave. centroid"] = np.mean(centroids)
+        row["centroid stdev"] = np.std(centroids)
+        row["ave. rolloff"] = np.mean(rolloffs)
+        row["rolloff stdev"] = np.std(rolloffs)
+        row["ave. spec.flux"] = np.mean(specFluxes)
+        row["spec.flux stdev"] = np.std(specFluxes)
+        row["N"] = N
+        rowdf = pd.DataFrame(row, index = [NUM])
+        df = pd.concat([df, rowdf], ignore_index=True)
+            
+        #end of loop. go to next track.
     
     
 # FILE I/O: export findings    
