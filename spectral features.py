@@ -44,7 +44,7 @@ FREQBINS = abs(FF.rfftfreq(FRAMESIZE, 1/SAMPLERATE))
 def frame(segment, startpt, FRAMESIZE):
     return segment[startpt:startpt+FRAMESIZE]*np.hanning(FRAMESIZE)
 
-def segment(track, SAMPLERATE): # this version just scans the entire track. cut into segments manually on excel or otherwise
+def segment(track, SAMPLERATE): # this version just scans the entire track
     
     #start from start of track
     ALLOWANCE = 2 #allowance in case of silence from recording
@@ -65,7 +65,7 @@ def rolloff(y, FREQBINS):
     rolloff = 0
     cutoffSum = np.sum(y*FREQBINS) * PERCENTAGE
     #sum from first bin to last bin until hit cutoffSum. then return rolloff frequency
-    cu = 0 #i cant rmb the real name for the cummulative thing but anw
+    cu = 0 
     binNo = 0
     while(cu<cutoffSum):
         cu = cu + FREQBINS[binNo]*y[binNo]
@@ -91,7 +91,7 @@ def extracting(num, GENRE): #input track number (int) and genre (genre can be NU
 
 for NUM in range(1, TRACKS+1):
     # arrays for "raw" track/spectra
-    trackLPCM = [] # should be a good idea
+    trackLPCM = [] 
     trackLPCM = segment(extracting(NUM, GENRE), SAMPLERATE)
     frameFFTs = []
     
