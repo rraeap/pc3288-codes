@@ -37,7 +37,7 @@ def filenameTrackNo(num, dp, TYPE, aob, tags):
 
 from math import log10
 
-MAXAMPLITUDE = 2**31 #32-bit PCM .wav encoding
+MAXAMPLITUDE = 2**15 #16-bit PCM .wav encoding
 EPSILON = 0.000001 #arbituary value close to zero, to protect input to log function
 
 def dBFS(amplitude, MAXAMPLITUDE, EPSILON):
