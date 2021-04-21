@@ -6,7 +6,7 @@ DP = 2
 ## this program will find:
 
 import pandas as pd
-df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "N"])
+df = pd.DataFrame(columns = ["average peak", "largest peak", "smallest peak", "loudness range", "% of low energy", "stdev", "S"])
 row={}
 
 #based on the following settings of:
@@ -37,7 +37,7 @@ def filenameTrackNo(num, dp, TYPE, aob, tags):
 
 from math import log10
 
-MAXAMPLITUDE = 2**31 #32-bit PCM .wav encoding
+MAXAMPLITUDE = 2**31 #32-bit signed integer PCM .wav encoding
 EPSILON = 0.000001 #arbituary value close to zero, to protect input to log function
 
 def dBFS(amplitude, MAXAMPLITUDE, EPSILON):
@@ -63,7 +63,7 @@ def track_segmentPeaks(trackFromWav, DURATION, SAMPLERATE, OVERLAP): #long term 
     segmentSize = DURATION*SAMPLERATE
     
     #convert from LPCM to dBFS
-    track = dBFS_array(trackFromWav, 2**31, 0.000001) #zz python y no #define and no globals://
+    track = dBFS_array(trackFromWav, 2**31, 0.000001) 
 
     #"visit" all segments
     for segmentStart in range(trackStart, len(track)-ALLOWANCE*SAMPLERATE, int(DURATION*SAMPLERATE*OVERLAP)):
